@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manufacturer Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", "Poppins", sans-serif;
+      }
+
+      body {
+        display: flex;
+        height: 100vh;
+        background: linear-gradient(120deg, #fef6f9, #f0f9ff);
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 290px;
+        background: #fdf2f8;
+        color: #9333ea;
+        display: flex;
+        flex-direction: column;
+        padding: 30px 20px;
+        border-top-right-radius: 30px;
+        border-bottom-right-radius: 30px;
+        box-shadow: 5px 0 20px rgba(0, 0, 0, 0.05);
+      }
+
+      .sidebar h2 {
+        font-size: 24px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: #ec4899;
+      }
+
+      .sidebar a {
+        text-decoration: none;
+        color: #9333ea;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.25s ease;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+      }
+
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: linear-gradient(to right, #f0abfc, #c084fc);
+        color: white;
+        transform: translateX(6px);
+        font-weight: bold;
+      }
+
+      .main {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+        background: #fdfcff;
+        border-top-left-radius: 30px;
+      }
+
+      h2 {
+        margin-bottom: 20px;
+        font-size: 28px;
+        color: #4b5563;
+      }
+
+      .section {
+        display: none;
+        animation: fadeIn 0.4s ease-in-out;
+      }
+
+      .section.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+      }
+
+      th,
+      td {
+        padding: 16px;
+        text-align: left;
+      }
+
+      th {
+        background: linear-gradient(to right, #a5f3fc, #f0abfc);
+        color: #3b0764;
+        font-weight: bold;
+      }
+
+      tr:nth-child(even) {
+        background-color: #fdf4ff;
+      }
+
+      tr:hover {
+        background-color: #fce7f3;
+      }
+
+      input,
+      select,
+      textarea {
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 14px;
+        font-size: 15px;
+        width: 100%;
+        transition: 0.2s ease;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #a78bfa;
+        box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.3);
+      }
+
+      button {
+        background: linear-gradient(to right, #f472b6, #a78bfa);
+        color: white;
+        border: none;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s ease;
+        box-shadow: 0 4px 12px rgba(249, 168, 212, 0.4);
+      }
+
+      button:hover {
+        transform: scale(1.03);
+        background: linear-gradient(to right, #e879f9, #7c3aed);
+      }
+
+      .status-badge {
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: bold;
+        display: inline-block;
+      }
+
+      .status-approved {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          flex-direction: row;
+          justify-content: space-around;
+          border-radius: 0;
+        }
+
+        .sidebar h2 {
+          display: none;
+        }
+
+        .main {
+          padding: 20px;
+        }
+
+        form {
+          flex-direction: column;
+        }
+
+        input,
+        button,
+        select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <body>
+    <div class="sidebar">
+      <h2>🧵Hello , Manufacturer</h2>
+      <a class="nav-link active" onclick="showSection('dashboard')"
+        >📊 Dashboard</a
+      >
+      <a class="nav-link" onclick="showSection('addBlanket')">➕ Add Blanket</a>
+      <a class="nav-link" onclick="showSection('itemsSection')">📦 Items</a>
+      <a class="nav-link" onclick="showSection('BlanketReqSec')"
+        >📨 Requested Blankets</a
+      >
+    </div>
+
+    <div class="main">
+      <!-- Dashboard Section -->
+      <div id="dashboard" class="section active">
+        <!-- Cute Note at Top -->
+        <div
+          style="
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ede9fe, #f0abfc);
+            padding: 20px 28px;
+            border-radius: 20px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+            font-size: 16px;
+            font-weight: 500;
+            color: #6b21a8;
+            line-height: 1.6;
+          "
+        >
+          🌸 <strong>Welcome!</strong> Let's build a world of comfort—one
+          blanket at a time. Your cozy inventory is looking fabulous! 🧶
+        </div>
+
+        <h2
+          style="
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #7c3aed;
+            font-weight: bold;
+          "
+        >
+          ✨ Manufacturer Dashboard
+        </h2>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 24px">
+          <!-- Total Blankets -->
+          <div
+            style="
+              flex: 1;
+              min-width: 240px;
+              background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+              padding: 24px;
+              border-radius: 20px;
+              box-shadow: 0 12px 30px rgba(255, 192, 203, 0.2);
+              text-align: center;
+            "
+          >
+            <div style="font-size: 32px; margin-bottom: 12px">🧺</div>
+            <h3
+              style="
+                color: #be185d;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 6px;
+              "
+            >
+              Total Blankets
+            </h3>
+            <p style="font-size: 32px; font-weight: bold; color: #9d174d">
+              {{ blankets|length }}
+            </p>
+          </div>
+
+          <!-- Total Stock -->
+          <div
+            style="
+              flex: 1;
+              min-width: 240px;
+              background: linear-gradient(135deg, #bae6fd, #e0f2fe);
+              padding: 24px;
+              border-radius: 20px;
+              box-shadow: 0 12px 30px rgba(0, 191, 255, 0.2);
+              text-align: center;
+            "
+          >
+            <div style="font-size: 32px; margin-bottom: 12px">📦</div>
+            <h3
+              style="
+                color: #0284c7;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 6px;
+              "
+            >
+              Total Stock
+            </h3>
+            <p style="font-size: 32px; font-weight: bold; color: #0369a1">
+              {{ blankets | sum(attribute='manufacturer_stock') }}
+            </p>
+          </div>
+
+          <!-- Average Price -->
+          <div
+            style="
+              flex: 1;
+              min-width: 240px;
+              background: linear-gradient(135deg, #fef3c7, #fde68a);
+              padding: 24px;
+              border-radius: 20px;
+              box-shadow: 0 12px 30px rgba(255, 204, 0, 0.2);
+              text-align: center;
+            "
+          >
+            <div style="font-size: 32px; margin-bottom: 12px">💰</div>
+            <h3
+              style="
+                color: #ca8a04;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 6px;
+              "
+            >
+              Average Price
+            </h3>
+            <p style="font-size: 32px; font-weight: bold; color: #92400e">
+              {{ (blankets | map(attribute='price') | sum) // (blankets|length)
+              if blankets else 0 }} LKR
+            </p>
+          </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div style="margin-top: 40px">
+          <h3 style="font-size: 24px; margin-bottom: 20px; color: #6d28d9">
+            📊 Blanket Stock Overview
+          </h3>
+
+          <div
+            style="
+              background: white;
+              padding: 20px;
+              border-radius: 16px;
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+              max-width: 600px;
+              margin: auto;
+            "
+          >
+            <canvas id="stockChart" height="140"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div id="itemsSection" class="section">
+        <!-- Cute Note -->
+        <div
+          style="
+            background: linear-gradient(135deg, #fce7f3, #e0f2fe);
+            padding: 18px 24px;
+            border-radius: 16px;
+            color: #7c3aed;
+            font-weight: 500;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            max-width: 500px;
+          "
+        >
+          🧶 Here's your cozy collection! Keep your shelves full and fluffy 💕
+        </div>
+
+        <h2 style="font-size: 28px; margin-bottom: 24px; color: #111827">
+          📦 My Inventory
+        </h2>
+
+        <div
+          style="
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+          "
+        >
+          <table
+            style="
+              width: 100%;
+              border-collapse: separate;
+              border-spacing: 0 12px;
+              font-size: 15px;
+            "
+          >
+            <thead>
+              <tr style="background-color: #c4b5fd; color: #1f2937">
+                <th
+                  style="
+                    padding: 16px;
+                    text-align: left;
+                    border-top-left-radius: 12px;
+                    font-weight: 600;
+                  "
+                >
+                  Name
+                </th>
+                <th style="padding: 16px; text-align: left; font-weight: 600">
+                  Material
+                </th>
+                <th style="padding: 16px; text-align: left; font-weight: 600">
+                  Price
+                </th>
+                <th
+                  style="
+                    padding: 16px;
+                    text-align: left;
+                    border-top-right-radius: 12px;
+                    font-weight: 600;
+                  "
+                >
+                  Stock
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in blankets %}
+              <tr
+                style="
+                  background: white;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+                  border-radius: 12px;
+                  transition: background 0.3s ease;
+                "
+                onmouseover="this.style.background='#fdf4ff'"
+                onmouseout="this.style.background='white'"
+              >
+                <td
+                  style="
+                    padding: 16px;
+                    border-top-left-radius: 12px;
+                    font-weight: 500;
+                    color: #1f2937;
+                  "
+                >
+                  {{ b.name }}
+                </td>
+                <td style="padding: 16px; color: #6b7280">{{ b.material }}</td>
+                <td style="padding: 16px; color: #047857">{{ b.price }} LKR</td>
+                <td
+                  style="
+                    padding: 16px;
+                    border-top-right-radius: 12px;
+                    font-weight: bold;
+                    color: #2563eb;
+                  "
+                >
+                  {{ b.manufacturer_stock }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="BlanketReqSec" class="section">
+        <h2 style="margin-top: 40px; margin-bottom: 20px">
+          📩 Blanket Requests
+        </h2>
+
+        {% if blanket_requests %}
+        <table
+          style="
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+          "
+        >
+          <thead>
+            <tr style="background-color: #10b981; color: white">
+              <th style="padding: 12px; text-align: left">Name</th>
+              <th style="padding: 12px; text-align: left">Material</th>
+              <th style="padding: 12px; text-align: left">Quantity</th>
+              <th style="padding: 12px; text-align: left">Description</th>
+              <th style="padding: 12px; text-align: left">Image</th>
+              <th style="padding: 12px; text-align: left">Status</th>
+              <th style="padding: 12px; text-align: left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in blanket_requests %}
+            <tr>
+              <td>{{ req.name }}</td>
+              <td>{{ req.material }}</td>
+              <td>{{ req.quantity }}</td>
+              <td>{{ req.description }}</td>
+              <td>
+                {% if req.image %}
+                <img
+                  src="{{ url_for('static', filename=req.image.split('static/')[-1]) }}"
+                  alt="Image"
+                  style="
+                    width: 80px;
+                    height: 50px;
+                    object-fit: cover;
+                    border-radius: 6px;
+                  "
+                />
+                {% else %} No Image {% endif %}
+              </td>
+              <td>{{ req.status }}</td>
+              <td>
+                {% if req.status != 'approved' %}
+                <form
+                  method="POST"
+                  action="{{ url_for('manufacturer.dashboard') }}"
+                >
+                  <input type="hidden" name="request_id" value="{{ req.id }}" />
+                  <select name="status" required>
+                    <option value="" disabled selected>Update Status</option>
+                    <option value="approved">Approve</option>
+                    <option value="rejected">Reject</option>
+                  </select>
+                  <button
+                    type="submit"
+                    style="
+                      margin-left: 8px;
+                      background: #10b981;
+                      color: white;
+                      border: none;
+                      border-radius: 6px;
+                      padding: 5px 10px;
+                      cursor: pointer;
+                    "
+                  >
+                    Update
+                  </button>
+                </form>
+                {% else %} Approved {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No blanket requests yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Add Blanket Section -->
+      <!-- Add Blanket Section -->
+<div id="addBlanket" class="section">
+  <!-- Cute Note -->
+  <div
+    style="
+      background: linear-gradient(135deg, #f0abfc, #bae6fd);
+      padding: 16px 24px;
+      border-radius: 16px;
+      color: #7c3aed;
+      font-weight: 500;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+      max-width: 500px;
+    "
+  >
+    ✨ Let’s make your inventory extra snuggly! Add a new blanket below 💫
+  </div>
+
+  <h2 style="margin-bottom: 24px; font-size: 28px; color: #111827">
+    🧶 Add New Blanket
+  </h2>
+
+  <div
+    style="
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 36px;
+      max-width: 900px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+      margin-top: 20px;
+      border: 2px dashed #e9d5ff;
+    "
+  >
+    <form
+      method="POST"
+      style="display: flex; flex-direction: column; gap: 20px"
+    >
+      <!-- Blanket Name -->
+      <div style="position: relative">
+        <label
+          for="name"
+          style="
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background: white;
+            padding: 0 6px;
+            font-size: 13px;
+            color: #c026d3;
+            font-weight: 600;
+          "
+          >🧸 Blanket Name</label
+        >
+        <input
+          id="name"
+          name="name"
+          placeholder="e.g. Cozy Comfort"
+          required
+          style="
+            width: 100%;
+            padding: 16px;
+            padding-top: 20px;
+            border-radius: 14px;
+            border: 1.8px solid #e5e7eb;
+            font-size: 16px;
+            transition: 0.3s;
+          "
+        />
+      </div>
+
+      <!-- Material -->
+      <div style="position: relative">
+        <label
+          for="material"
+          style="
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background: white;
+            padding: 0 6px;
+            font-size: 13px;
+            color: #c026d3;
+            font-weight: 600;
+          "
+          >🧵 Material</label
+        >
+        <input
+          id="material"
+          name="material"
+          placeholder="e.g. Wool, Cotton"
+          required
+          style="
+            width: 100%;
+            padding: 16px;
+            padding-top: 20px;
+            border-radius: 14px;
+            border: 1.8px solid #e5e7eb;
+            font-size: 16px;
+            transition: 0.3s;
+          "
+        />
+      </div>
+
+      <!-- Price -->
+      <div style="position: relative">
+        <label
+          for="price"
+          style="
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background: white;
+            padding: 0 6px;
+            font-size: 13px;
+            color: #c026d3;
+            font-weight: 600;
+          "
+          >💸 Price (LKR)</label
+        >
+        <input
+          id="price"
+          name="price"
+          type="number"
+          placeholder="e.g. 2599"
+          required
+          style="
+            width: 100%;
+            padding: 16px;
+            padding-top: 20px;
+            border-radius: 14px;
+            border: 1.8px solid #e5e7eb;
+            font-size: 16px;
+            transition: 0.3s;
+          "
+        />
+      </div>
+
+      <!-- Stock -->
+      <div style="position: relative">
+        <label
+          for="stock"
+          style="
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background: white;
+            padding: 0 6px;
+            font-size: 13px;
+            color: #c026d3;
+            font-weight: 600;
+          "
+          >📦 Stock Quantity</label
+        >
+        <input
+          id="stock"
+          name="stock"
+          type="number"
+          placeholder="e.g. 100"
+          required
+          style="
+            width: 100%;
+            padding: 16px;
+            padding-top: 20px;
+            border-radius: 14px;
+            border: 1.8px solid #e5e7eb;
+            font-size: 16px;
+            transition: 0.3s;
+          "
+        />
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        style="
+          padding: 16px;
+          background: linear-gradient(to right, #f472b6, #c084fc);
+          color: white;
+          border: none;
+          font-size: 17px;
+          font-weight: bold;
+          border-radius: 14px;
+          cursor: pointer;
+          transition: background 0.3s ease, transform 0.2s;
+        "
+        onmouseover="this.style.transform='scale(1.03)'"
+        onmouseout="this.style.transform='scale(1)'"
+      >
+        ➕ Add Blanket
+      </button>
+    </form>
+  </div>
+</div>
+
+    </div>
+
+    <script>
+        function showSection(id) {
+          const sections = document.querySelectorAll('.section');
+          const links = document.querySelectorAll('.nav-link');
+
+          sections.forEach(sec => sec.classList.remove('active'));
+          links.forEach(link => link.classList.remove('active'));
+
+          document.getElementById(id).classList.add('active');
+          event.target.classList.add('active');
+        }
+
+         const names = {{ blankets | map(attribute='name') | list | tojson }};
+      const prices = {{ blankets | map(attribute='price') | list | tojson }};
+      const stocks = {{ blankets | map(attribute='manufacturer_stock') | list | tojson }};
+
+      // Bar Chart
+      new Chart(document.getElementById("stockChart"), {
+        type: 'bar',
+        data: {
+          labels: names,
+          datasets: [{
+            label: 'Stock',
+            data: stocks,
+            backgroundColor: '#10b981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      // Line Chart
+      new Chart(document.getElementById("priceChart"), {
+        type: 'line',
+        data: {
+          labels: names,
+          datasets: [{
+            label: 'Price (LKR)',
+            data: prices,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' }
+          }
+        }
+      });
+
+      // Doughnut Chart
+      new Chart(document.getElementById("stockPieChart"), {
+        type: 'doughnut',
+        data: {
+          labels: names,
+          datasets: [{
+            label: 'Stock Share',
+            data: stocks,
+            backgroundColor: [
+              '#10b981', '#3b82f6', '#facc15', '#ec4899', '#f97316',
+              '#8b5cf6', '#14b8a6', '#f87171', '#6366f1', '#22d3ee'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

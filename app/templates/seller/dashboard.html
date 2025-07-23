@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Seller Dashboard</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <body
+    style="
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      height: 100vh;
+    "
+  >
+    <!-- Sidebar -->
+    <div
+      style="
+        width: 250px;
+        background: linear-gradient(180deg, #91a7ccff, #1b3a83ff);
+        padding: 30px 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 6px 0 18px rgba(0, 0, 0, 0.1);
+        border-top-right-radius: 24px;
+        border-bottom-right-radius: 24px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      "
+    >
+      <h2
+        style="
+          color: #a7f3d0;
+          text-align: center;
+          margin-bottom: 40px;
+          font-size: 26px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+        "
+      >
+        🛍️ Hello, Seller
+      </h2>
+
+      <!-- Nav Link Template -->
+      <style>
+        .cute-link {
+          display: block;
+          color: #d1d5db;
+          padding: 12px 16px;
+          margin-bottom: 12px;
+          border-radius: 12px;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 600;
+          background: transparent;
+        }
+
+        .cute-link:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: #ffffff;
+          transform: translateX(5px);
+        }
+
+        .cute-link.active {
+          background: linear-gradient(90deg, #6ee7b7, #34d399);
+          color: #1e293b;
+          font-weight: 700;
+          box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4);
+        }
+      </style>
+
+      <a onclick="showSection('dashboard')" class="nav-link cute-link active">
+        🧺 Dashboard
+      </a>
+
+      <a onclick="showSection('placeOrder')" class="nav-link cute-link">
+        📝 Place Order
+      </a>
+
+      <a onclick="showSection('myOrders')" class="nav-link cute-link">
+        📄 My Orders
+      </a>
+
+      <a onclick="showSection('approvedOrders')" class="nav-link cute-link">
+        ✅ Approved Orders
+      </a>
+    </div>
+
+    <!-- Main content -->
+    <div style="flex: 1; padding: 30px; overflow-y: auto">
+      <!-- Dashboard Section -->
+      <div
+        id="dashboard"
+        class="section"
+        style="
+          display: block;
+          font-family: 'Quicksand', sans-serif;
+          background: #fef9f9;
+          padding: 40px;
+          border-radius: 28px;
+          max-width: 900px;
+          margin: auto;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+        "
+      >
+        <h2
+          style="
+            font-size: 34px;
+            font-weight: 700;
+            color: #6b4c9a;
+            text-align: center;
+            margin-bottom: 36px;
+            letter-spacing: 1.1px;
+          "
+        >
+          🌷 Welcome to Your Cozy Dashboard
+        </h2>
+
+        {% if approved_orders %}
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 28px;
+          "
+        >
+          {% for o in approved_orders %}
+          <div
+            style="
+              background: #fff0f6;
+              border-radius: 22px;
+              padding: 24px 20px;
+              box-shadow: 0 12px 30px rgba(107, 76, 154, 0.12);
+              transition: transform 0.3s ease, box-shadow 0.3s ease;
+              cursor: default;
+            "
+            onmouseover="this.style.transform='translateY(-6px) scale(1.04)'; this.style.boxShadow='0 20px 48px rgba(107, 76, 154, 0.24)';"
+            onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 12px 30px rgba(107, 76, 154, 0.12)';"
+          >
+            <!-- Cute pastel circle icon -->
+            <div
+              style="
+                width: 60px;
+                height: 60px;
+                margin: auto;
+                background: #d6bcfa;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                color: #6b4c9a;
+                box-shadow: 0 4px 10px rgba(107, 76, 154, 0.2);
+                margin-bottom: 18px;
+              "
+            >
+              🛏️
+            </div>
+            <!-- Product name -->
+            <h3
+              style="
+                font-size: 20px;
+                color: #6b4c9a;
+                font-weight: 600;
+                margin-bottom: 6px;
+                text-align: center;
+                letter-spacing: 0.5px;
+              "
+            >
+              {{ o.name }}
+            </h3>
+            <!-- Quantity with cute styling -->
+            <p
+              style="
+                font-size: 24px;
+                font-weight: 700;
+                color: #a074c4;
+                text-align: center;
+                margin-top: 0;
+              "
+            >
+              {{ o.quantity }} items
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Chart container -->
+        <div
+          style="
+            margin-top: 48px;
+            background: white;
+            border-radius: 28px;
+            padding: 32px 28px;
+            box-shadow: 0 14px 40px rgba(107, 76, 154, 0.08);
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+          "
+        >
+          <h3
+            style="
+              font-size: 24px;
+              font-weight: 700;
+              color: #6b4c9a;
+              margin-bottom: 20px;
+              text-align: center;
+            "
+          >
+            📊 Inventory Snapshot
+          </h3>
+          <canvas
+            id="stockChart"
+            height="140"
+            style="
+              width: 100%;
+              border-radius: 16px;
+              box-shadow: inset 0 0 12px #e8d7fa;
+            "
+          ></canvas>
+        </div>
+
+        {% else %}
+        <div
+          style="
+            text-align: center;
+            color: #a074c4;
+            font-size: 18px;
+            padding: 60px 20px;
+            background: #f5e9fc;
+            border-radius: 24px;
+            box-shadow: 0 8px 24px rgba(160, 116, 196, 0.12);
+          "
+        >
+          <p style="margin-bottom: 12px">No approved stock yet!</p>
+          <p style="font-size: 22px">
+            🌸 Your cozy inventory will appear here once orders are approved.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Place Order -->
+      <div
+        id="placeOrder"
+        class="section"
+        style="
+          display: block;
+          max-width: 850px;
+          margin: 40px auto;
+          font-family: 'Quicksand', sans-serif;
+          color: #4b5563;
+        "
+      >
+        <h2
+          style="
+            text-align: center;
+            font-weight: 700;
+            font-size: 32px;
+            color: #6d28d9;
+            margin-bottom: 40px;
+          "
+        >
+          📝 Place Your Order
+        </h2>
+
+        {% if stock %}
+        <div style="display: flex; flex-direction: column; gap: 28px">
+          {% for s in stock %}
+          <form
+            method="POST"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 20px;
+              background: #f3e8ff;
+              border-radius: 60px;
+              padding: 16px 28px;
+              box-shadow: 0 6px 20px rgba(107, 33, 168, 0.12);
+            "
+          >
+            <div
+              style="
+                flex-shrink: 0;
+                font-size: 36px;
+                background: #d8b4fe;
+                color: #7c3aed;
+                width: 70px;
+                height: 70px;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 4px 12px rgba(124, 58, 173, 0.2);
+              "
+            >
+              🧶
+            </div>
+
+            <div style="flex-grow: 1">
+              <h3
+                style="
+                  margin: 0;
+                  font-weight: 700;
+                  font-size: 20px;
+                  color: #5b21b6;
+                "
+              >
+                {{ s.name }}
+              </h3>
+              <p style="margin: 4px 0 8px 0; font-size: 14px; color: #7c3aed">
+                Material: <strong>{{ s.material }}</strong> | Available:
+                <strong>{{ s.stock }}</strong> units
+              </p>
+            </div>
+
+            <input type="hidden" name="blanket_id" value="{{ s.blanket_id }}" />
+
+            <input
+              type="number"
+              name="quantity"
+              min="1"
+              placeholder="Qty"
+              required
+              style="
+                width: 80px;
+                padding: 10px 12px;
+                border-radius: 30px;
+                border: 2px solid #c4b5fd;
+                font-weight: 600;
+                font-size: 15px;
+                text-align: center;
+                outline-offset: 2px;
+                transition: border-color 0.2s ease;
+              "
+              onfocus="this.style.borderColor='#7c3aed';"
+              onblur="this.style.borderColor='#c4b5fd';"
+            />
+
+            <button
+              type="submit"
+              style="
+                background: #a78bfa;
+                color: white;
+                border: none;
+                border-radius: 40px;
+                padding: 14px 22px;
+                font-weight: 700;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: 0 8px 16px rgba(167, 139, 250, 0.4);
+                transition: background 0.3s ease;
+                flex-shrink: 0;
+              "
+              onmouseover="this.style.background='#7c3aed';"
+              onmouseout="this.style.background='#a78bfa';"
+            >
+              ➕ Order
+            </button>
+          </form>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p
+          style="
+            text-align: center;
+            font-size: 18px;
+            color: #9ca3af;
+            margin-top: 60px;
+          "
+        >
+          😴 No blankets available right now. Please check back soon!
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- My Orders -->
+      <div
+        id="myOrders"
+        class="section"
+        style="
+          display: none;
+          max-width: 700px;
+          margin: 40px auto;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          color: #111827;
+        "
+      >
+        <h2
+          style="
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 32px;
+            text-align: center;
+            color: #111827;
+          "
+        >
+          📋 My Orders
+        </h2>
+
+        {% if orders %}
+        <div style="text-align: center; margin-bottom: 32px">
+          <button
+            onclick="exportTableToCSV('my_orders.csv')"
+            style="
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+              color: white;
+              border: none;
+              border-radius: 12px;
+              padding: 12px 28px;
+              font-weight: 700;
+              font-size: 16px;
+              cursor: pointer;
+              box-shadow: 0 6px 12px rgba(5, 150, 105, 0.4);
+              transition: background 0.3s ease;
+            "
+            onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #065f46 100%)'"
+            onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)'"
+          >
+            Export as CSV
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          {% for o in orders %}
+          <div
+            style="
+              background: #fff;
+              border-radius: 18px;
+              padding: 18px 24px;
+              box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              cursor: default;
+              transition: background 0.25s ease;
+            "
+            onmouseover="this.style.background='#f9fafb';"
+            onmouseout="this.style.background='#fff';"
+          >
+            <div
+              style="
+                flex-basis: 50%;
+                font-weight: 600;
+                font-size: 18px;
+                color: #111827;
+              "
+            >
+              {{ o.name }}
+            </div>
+
+            <div
+              style="
+                flex-basis: 20%;
+                text-align: center;
+                font-weight: 700;
+                font-size: 18px;
+                color: #10b981;
+              "
+            >
+              {{ o.quantity }}
+            </div>
+
+            <div
+              style="
+                flex-basis: 25%;
+                text-align: center;
+                font-style: italic;
+                font-weight: 600;
+                color: #6b7280;
+                background: #f3f4f6;
+                padding: 6px 14px;
+                border-radius: 16px;
+                user-select: none;
+                max-width: 140px;
+              "
+            >
+              {{ o.status }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% else %}
+        <p
+          style="
+            text-align: center;
+            font-size: 18px;
+            color: #6b7280;
+            margin-top: 60px;
+          "
+        >
+          😕 No orders found. Time to place one! 🛒
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- Approved Orders -->
+      <div
+        id="approvedOrders"
+        class="section"
+        style="
+          display: none;
+          max-width: 750px;
+          margin: 40px auto;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          color: #166534;
+        "
+      >
+        <h2
+          style="
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 28px;
+            text-align: center;
+            color: #15803d;
+            user-select: none;
+          "
+        >
+          ✅ Approved Order History
+        </h2>
+
+        {% if approved_orders %}
+        <!-- Export Buttons -->
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <button
+            onclick="exportTableToCSV('approved_orders.csv')"
+            style="
+              padding: 12px 26px;
+              border: none;
+              background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+              color: #f0fff4;
+              border-radius: 14px;
+              font-weight: 700;
+              font-size: 16px;
+              cursor: pointer;
+              box-shadow: 0 6px 14px rgba(34, 197, 94, 0.35);
+              transition: background 0.3s ease, transform 0.2s ease;
+            "
+            onmouseover="this.style.background='linear-gradient(135deg, #16a34a 0%, #15803d 100%)'; this.style.transform='scale(1.05)';"
+            onmouseout="this.style.background='linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'; this.style.transform='scale(1)';"
+          >
+            Export CSV
+          </button>
+          <button
+            onclick="exportTableToText()"
+            style="
+              padding: 12px 26px;
+              border: none;
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+              color: #f0fff4;
+              border-radius: 14px;
+              font-weight: 700;
+              font-size: 16px;
+              cursor: pointer;
+              box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35);
+              transition: background 0.3s ease, transform 0.2s ease;
+            "
+            onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)'; this.style.transform='scale(1.05)';"
+            onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)'; this.style.transform='scale(1)';"
+          >
+            Export Text
+          </button>
+        </div>
+
+        <!-- Table Container -->
+        <div
+          style="
+            overflow-x: auto;
+            border-radius: 20px;
+            background: #ecfdf5;
+            box-shadow: 0 10px 28px rgba(72, 121, 84, 0.15);
+            padding: 12px 20px;
+          "
+        >
+          <table
+            id="approvedOrdersTable"
+            style="
+              width: 100%;
+              border-collapse: separate;
+              border-spacing: 0 16px;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              min-width: 600px;
+            "
+          >
+            <thead>
+              <tr style="background: #bbf7d0; border-radius: 14px">
+                <th
+                  style="
+                    padding: 16px 28px;
+                    color: #166534;
+                    text-align: left;
+                    font-weight: 700;
+                    font-size: 18px;
+                    border-top-left-radius: 14px;
+                  "
+                >
+                  Product
+                </th>
+                <th
+                  style="
+                    padding: 16px 28px;
+                    color: #166534;
+                    text-align: center;
+                    font-weight: 700;
+                    font-size: 18px;
+                  "
+                >
+                  Quantity
+                </th>
+                <th
+                  style="
+                    padding: 16px 28px;
+                    color: #166534;
+                    text-align: center;
+                    font-weight: 700;
+                    font-size: 18px;
+                    border-top-right-radius: 14px;
+                  "
+                >
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in approved_orders %}
+              <tr
+                style="
+                  background: #dcfce7;
+                  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.15);
+                  border-radius: 14px;
+                  transition: background 0.3s ease, box-shadow 0.3s ease;
+                  cursor: pointer;
+                "
+                onmouseover="this.style.background='#bbf7d0'; this.style.boxShadow='0 8px 18px rgba(34, 197, 94, 0.25)';"
+                onmouseout="this.style.background='#dcfce7'; this.style.boxShadow='0 3px 10px rgba(34, 197, 94, 0.15)';"
+              >
+                <td
+                  style="
+                    padding: 20px 28px;
+                    font-weight: 600;
+                    color: #15803d;
+                    border-radius: 14px 0 0 14px;
+                  "
+                >
+                  {{ o.name }}
+                </td>
+                <td
+                  style="
+                    padding: 20px 28px;
+                    text-align: center;
+                    font-weight: 700;
+                    color: #22c55e;
+                    font-size: 18px;
+                  "
+                >
+                  {{ o.quantity }}
+                </td>
+                <td
+                  style="
+                    padding: 20px 28px;
+                    text-align: center;
+                    font-style: italic;
+                    color: #4ade80;
+                    border-radius: 0 14px 14px 0;
+                    font-weight: 600;
+                  "
+                >
+                  {{ o.status }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p
+          style="
+            text-align: center;
+            font-size: 18px;
+            color: #6b7280;
+            margin-top: 60px;
+            user-select: none;
+          "
+        >
+          No approved orders yet. 🌱
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <script>
+          function showSection(id) {
+            const sections = document.querySelectorAll(".section");
+            const links = document.querySelectorAll(".nav-link");
+            sections.forEach((sec) => (sec.style.display = "none"));
+            links.forEach((link) => link.classList.remove("active"));
+            document.getElementById(id).style.display = "block";
+            event.target.classList.add("active");
+          }
+
+           const swiper = new Swiper(".swiper", {
+          slidesPerView: 1,
+          spaceBetween: 20,
+          pagination: { el: ".swiper-pagination" },
+          breakpoints: {
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 }
+          }
+        });
+
+        {% if approved_orders %}
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [{% for o in approved_orders %}'{{ o.name }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+              label: 'Stock Quantity',
+              data: [{% for o in approved_orders %}{{ o.quantity }}{% if not loop.last %}, {% endif %}{% endfor %}],
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+              }
+            }
+          }
+        });
+        {% endif %}
+
+
+        function exportTableToCSV(filename) {
+        const rows = document.querySelectorAll("#myOrders table tr");
+        const csv = [];
+        rows.forEach(row => {
+          const cols = row.querySelectorAll("th, td");
+          const rowData = [];
+          cols.forEach(col => {
+            // Escape commas and quotes
+            let data = col.innerText.replace(/"/g, '""');
+            if (data.indexOf(",") >= 0 || data.indexOf('"') >= 0) {
+              data = `"${data}"`;
+            }
+            rowData.push(data);
+          });
+          csv.push(rowData.join(","));
+        });
+        const csvString = csv.join("\n");
+        const blob = new Blob([csvString], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+      }
+
+
+       // Export table to CSV
+        function exportTableToCSV(filename) {
+          const csv = [];
+          const rows = document.querySelectorAll("#approvedOrdersTable tr");
+          for (let row of rows) {
+            const cols = row.querySelectorAll("th, td");
+            const rowData = [];
+            for (let col of cols) {
+              let data = col.innerText.replace(/"/g, '""');
+              if (data.includes(',') || data.includes('"') || data.includes('\n')) {
+                data = `"${data}"`;
+              }
+              rowData.push(data);
+            }
+            csv.push(rowData.join(","));
+          }
+          downloadFile(csv.join("\n"), filename, "text/csv");
+        }
+
+        // Export table to plain text
+        function exportTableToText() {
+          const rows = document.querySelectorAll("#approvedOrdersTable tr");
+          let text = "";
+          rows.forEach(row => {
+            const cols = row.querySelectorAll("th, td");
+            const rowText = [];
+            cols.forEach(col => {
+              rowText.push(col.innerText.trim());
+            });
+            text += rowText.join("\t") + "\n";
+          });
+          downloadFile(text, "approved_orders.txt", "text/plain");
+        }
+
+        // Helper to download file
+        function downloadFile(content, filename, mimeType) {
+          const blob = new Blob([content], {type: mimeType});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          URL.revokeObjectURL(url);
+          a.remove();
+        }
+
+
+        // Validate quantity on all place order forms
+      document.querySelectorAll('#placeOrder form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const stock = parseInt(form.dataset.stock, 10);
+          const quantityInput = form.querySelector('input[name="quantity"]');
+          const quantity = parseInt(quantityInput.value, 10);
+
+          if (quantity > stock) {
+            alert(`Sorry, only ${stock} item${stock > 1 ? 's' : ''} available.`);
+            quantityInput.focus();
+            return false;
+          }
+
+          // If validation passes, submit the form normally
+          form.submit();
+        });
+      });
+    </script>
+  </body>
+</html>

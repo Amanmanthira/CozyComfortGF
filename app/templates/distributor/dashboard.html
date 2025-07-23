@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Distributor Dashboard</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+  /* GLOBAL RESET */
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #fdfbfb, #ebedee);
+    display: flex;
+    height: 100vh;
+    color: #333;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #7f7fd5, #86a8e7, #91eae4);
+    padding: 30px 20px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+
+  .sidebar h2 {
+    color: #ffffff;
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 40px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #f0f0f0;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    background: #ffffff33;
+    color: #fff;
+  }
+
+  /* MAIN CONTENT */
+  .main-content {
+    flex: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+    background: #f9f9fc;
+  }
+
+  .dashboard-header {
+    font-size: 28px;
+    font-weight: 700;
+    color: #4b4b7d;
+    margin-bottom: 30px;
+  }
+
+  /* CARDS */
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .card {
+    flex: 1 1 250px;
+    background: white;
+    padding: 24px 20px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(150, 150, 200, 0.08);
+    text-align: center;
+    transition: transform 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+  }
+
+  .card h4 {
+    color: #8083a3;
+    font-size: 16px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .card p {
+    font-size: 32px;
+    font-weight: 700;
+    color: #4b4b7d;
+    margin: 0;
+  }
+
+  .card.total-units {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  .card.approved-orders {
+    background: #e6fffa;
+    color: #0f766e;
+  }
+
+  .card.pending-orders {
+    background: #fff7e6;
+    color: #b45309;
+  }
+
+  .card.total-units h4 {
+    color: #1976d2;
+  }
+
+  .card.approved-orders h4 {
+    color: #0e9488;
+  }
+
+  .card.pending-orders h4 {
+    color: #a16207;
+  }
+
+  /* CHART SECTION */
+  .charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+  }
+
+  .chart-box {
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    flex: 1 1 400px;
+    max-width: 600px;
+  }
+
+  .chart-title {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #4b4b7d;
+    text-align: center;
+  }
+
+  /* INPUT + BUTTON STYLE (across form sections) */
+  input, textarea, select {
+    font-family: inherit;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px 12px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+  }
+
+  button {
+    background: linear-gradient(135deg, #7f7fd5, #86a8e7);
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background: linear-gradient(135deg, #86a8e7, #91eae4);
+    transform: scale(1.02);
+  }
+
+  /* UTILITY */
+  .section h2, .section h3 {
+    color: #3d3d63;
+    margin-bottom: 20px;
+  }
+
+  table th {
+    background-color: #eef2ff;
+    color: #3730a3;
+  }
+
+  table td {
+    color: #4b5563;
+  }
+   .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 28px rgba(240, 98, 146, 0.5);
+    }
+    table tbody tr:hover {
+      background-color: #e1bee7;
+      cursor: pointer;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Hello, Distributor</h2>
+    <a onclick="showSection('dashboard')" class="nav-link active">📊 <span>Dashboard</span></a>
+    <a onclick="showSection('inventory')" class="nav-link">🧺 <span>My Inventory</span></a>
+    <a onclick="showSection('Addinventory')" class="nav-link">➕ <span>Add Inventory</span></a>
+    <a onclick="showSection('requestStock')" class="nav-link">📩 <span>Request Stock</span></a>
+    <a onclick="showSection('pending')" class="nav-link">⏳ <span>Pending Orders</span></a>
+    <a onclick="showSection('approved')" class="nav-link">✅ <span>Approved Orders</span></a>
+  </div>
+
+  <div class="main-content">
+
+ <!-- Dashboard -->
+    <div id="dashboard" class="section" style="display: block; padding: 24px; font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff9f9; max-width: 960px; margin: 40px auto; border-radius: 20px; box-shadow: 0 12px 24px rgba(255, 182, 193, 0.3);">
+
+      <!-- Header with Calendar & Time -->
+      <div class="dashboard-header" style="font-size: 32px; font-weight: 700; color: #91afdbff; margin-bottom: 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div>📦 <span style="font-family: 'Comic Sans MS', cursive, sans-serif;">Distributor Dashboard</span></div>
+
+        <!-- Calendar & Time -->
+        <div id="calendar-time" style="background: #734fb6ff; padding: 10px 24px; border-radius: 40px; font-size: 18px; color: #8babdaff; font-weight: 600; min-width: 260px; box-shadow: 0 4px 10px rgba(216, 27, 96, 0.3);">
+          <span id="date"></span> ⏰ <span id="time"></span>
+        </div>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="cards-container" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px;">
+
+        <div class="card total-products" style="flex: 1 1 200px; background: #f8bbd0; padding: 24px; border-radius: 24px; box-shadow: 0 8px 20px rgba(240, 98, 146, 0.3); text-align: center; cursor: default; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+          <h4 style="font-size: 22px; color: #880e4f; margin-bottom: 12px;">🛍️ Total Products</h4>
+          <p style="font-size: 42px; font-weight: 700; color: #ad1457; margin: 0;">{{ inventory|length }}</p>
+        </div>
+
+        <div class="card total-units" style="flex: 1 1 200px; background: #b2dfdb; padding: 24px; border-radius: 24px; box-shadow: 0 8px 20px rgba(0, 150, 136, 0.3); text-align: center; cursor: default; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+          <h4 style="font-size: 22px; color: #004d40; margin-bottom: 12px;">📦 Total Units</h4>
+          <p style="font-size: 42px; font-weight: 700; color: #00796b; margin: 0;">{{ total_units|length }}</p>
+        </div>
+
+        <div class="card approved-orders" style="flex: 1 1 200px; background: #bbdefb; padding: 24px; border-radius: 24px; box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3); text-align: center; cursor: default; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+          <h4 style="font-size: 22px; color: #0d47a1; margin-bottom: 12px;">✅ Approved Orders Quantity</h4>
+          <p style="font-size: 42px; font-weight: 700; color: #1565c0; margin: 0;">{{ approved_orders|length }}</p>
+        </div>
+
+      </div>
+
+      <!-- Full width data table -->
+      <div class="table-container" style="overflow-x: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); max-width: 100%; margin-bottom: 40px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 16px; color: #444;">
+          <thead>
+            <tr style="background: #734fb6ff; color: #fff;">
+              <th style="padding: 12px 16px; border-radius: 12px 0 0 12px;">Product Name</th>
+              <th style="padding: 12px 16px;">Category</th>
+              <th style="padding: 12px 16px;">Units in Stock</th>
+              <th style="padding: 12px 16px;">Price</th>
+              <th style="padding: 12px 16px; border-radius: 0 12px 12px 0;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Example rows, replace with your data loop -->
+            <tr style="border-bottom: 1px solid #ddd; transition: background-color 0.2s;">
+              <td style="padding: 12px 16px;">🛌 Soft Fleece Blanket</td>
+              <td style="padding: 12px 16px;">Blankets</td>
+              <td style="padding: 12px 16px;">124</td>
+              <td style="padding: 12px 16px;">5000LKR</td>
+              <td style="padding: 12px 16px; color: #388e3c; font-weight: 600;">In Stock</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ddd; background: #f9f9f9; transition: background-color 0.2s;">
+              <td style="padding: 12px 16px;">🛌 Fleece Blanket – Purple</td>
+              <td style="padding: 12px 16px;">Blankets</td>
+              <td style="padding: 12px 16px;">67</td>
+              <td style="padding: 12px 16px;">5000LKR</td>
+              <td style="padding: 12px 16px; color: #f57c00; font-weight: 600;">Low Stock</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ddd; transition: background-color 0.2s;">
+              <td style="padding: 12px 16px;">🛌 Soft Fleece Blanket - Red</td>
+              <td style="padding: 12px 16px;">Blankets</td>
+              <td style="padding: 12px 16px;">0</td>
+              <td style="padding: 12px 16px;">6000LKR</td>
+              <td style="padding: 12px 16px; color: #d32f2f; font-weight: 600;">Out of Stock</td>
+            </tr>
+            <!-- Add more rows dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+
+   <!-- Inventory Section -->
+<div id="inventory" class="section" style="display:none;">
+  <h3 style="font-size: 22px; color: #1e293b; margin-bottom: 20px; font-weight: 600;">My Inventory Overview</h3>
+
+  {% if inventory %}
+  <div style="overflow-x: auto; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <thead style="background-color: #f1f5f9;">
+        <tr>
+          <th style="padding: 14px 16px; text-align: left; color: #334155;">#</th>
+          <th style="padding: 14px 16px; text-align: left; color: #334155;">Product Name</th>
+          <th style="padding: 14px 16px; text-align: left; color: #334155;">Available Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in inventory %}
+        <tr style="border-top: 1px solid #e5e7eb;">
+          <td style="padding: 12px 16px; color: #64748b;">{{ loop.index }}</td>
+          <td style="padding: 12px 16px; color: #0f172a; font-weight: 500;">{{ i.name }}</td>
+          <td style="padding: 12px 16px; color: #0f172a;"><strong>{{ i.stock }}</strong> units</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="background: #fff0f1; padding: 16px 20px; border-radius: 10px; border: 1px solid #fecaca; color: #b91c1c; font-size: 14px;">
+    ❌ No inventory data found.
+  </div>
+  {% endif %}
+</div>
+
+<!-- Pending Orders -->
+<div id="pending" class="section" style="display: none;">
+  <h2 style="font-size: 24px; color: #1f2937; margin-bottom: 20px;">Pending Orders Overview</h2>
+
+  {% if orders %}
+  <form method="POST">
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); font-size: 14px;">
+        <thead style="background-color: #f9fafb; color: #374151;">
+          <tr>
+            <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Seller</th>
+            <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Blanket Name</th>
+            <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Quantity</th>
+            <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr style="border-bottom: 1px solid #f3f4f6;">
+            <td style="padding: 10px 16px;">{{ o.seller_name }}</td>
+            <td style="padding: 10px 16px;">{{ o.blanket_name }}</td>
+            <td style="padding: 10px 16px;">{{ o.quantity }}</td>
+            <td style="padding: 10px 16px;">
+              <button name="approve_order_id" value="{{ o.id }}"
+                style="background-color: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                Approve
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+  {% else %}
+  <p style="color: #6b7280; font-size: 15px;">There are currently no pending orders.</p>
+  {% endif %}
+</div>
+
+
+<!-- 🌸 Request New Stock Section -->
+<div id="requestStock" class="section" style="display:none; font-family: 'Segoe UI', sans-serif;">
+  <h2 style="font-size: 34px; color: #047857; margin-bottom: 28px; text-align:center; font-weight: 800; text-shadow: 1px 1px 2px #d1fae5;">
+    📦✨ Request New Blanket
+  </h2>
+
+  <!-- 💌 Form Section -->
+  <form method="POST" enctype="multipart/form-data" 
+        style=" padding: 28px; background: #e0f2fe; border-radius: 24px; 
+               box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3); margin: auto 0 48px auto; border: 4px solid #10b981;">
+    <h3 style="font-size: 26px; margin-bottom: 24px; color: #059669; font-weight: 700; letter-spacing: 0.06em; text-align:center;">
+      🧵 Request a Cozy Blanket
+    </h3>
+
+    <label style="display:block; margin-bottom: 8px; color:#065f46; font-weight: 600; font-size: 16px;">
+      🛌 Blanket Name
+    </label>
+    <input type="text" name="name" required
+      style="width:100%; padding:14px; margin-bottom:22px; border: 2.5px solid #34d399; border-radius:12px; font-size: 16px; font-weight: 600; color: #065f46;
+             transition: transform 0.25s ease, border-color 0.3s;"
+      onfocus="this.style.borderColor='#059669'; this.style.transform='scale(1.05)';"
+      onblur="this.style.borderColor='#34d399'; this.style.transform='scale(1)';"
+      placeholder="Type Blanket's name here ✨" />
+
+    <label style="display:block; margin-bottom: 8px; color:#065f46; font-weight: 600; font-size: 16px;">
+      🧶 Material
+    </label>
+    <input type="text" name="material" required
+      style="width:100%; padding:14px; margin-bottom:22px; border: 2.5px solid #34d399; border-radius:12px; font-size: 16px; font-weight: 600; color: #065f46;
+             transition: transform 0.25s ease, border-color 0.3s;"
+      onfocus="this.style.borderColor='#059669'; this.style.transform='scale(1.05)';"
+      onblur="this.style.borderColor='#34d399'; this.style.transform='scale(1)';"
+      placeholder="What fabric or yarn? 🧵" />
+
+    <label style="display:block; margin-bottom: 8px; color:#065f46; font-weight: 600; font-size: 16px;">
+      🔢 Quantity
+    </label>
+    <input type="number" name="quantity" min="1" required
+      style="width:100%; padding:14px; margin-bottom:22px; border: 2.5px solid #34d399; border-radius:12px; font-size: 16px; font-weight: 600; color: #065f46;
+             transition: transform 0.25s ease, border-color 0.3s;"
+      onfocus="this.style.borderColor='#059669'; this.style.transform='scale(1.05)';"
+      onblur="this.style.borderColor='#34d399'; this.style.transform='scale(1)';"
+      placeholder="How many blankets? 🎯" />
+
+    <label style="display:block; margin-bottom: 8px; color:#065f46; font-weight: 600; font-size: 16px;">
+      📝 Description
+    </label>
+    <textarea name="description" rows="4" required
+      style="width:100%; padding:14px; margin-bottom:22px; border: 2.5px solid #34d399; border-radius:12px; font-size: 16px; font-weight: 600; color: #065f46;
+             transition: transform 0.25s ease, border-color 0.3s;"
+      onfocus="this.style.borderColor='#059669'; this.style.transform='scale(1.05)';"
+      onblur="this.style.borderColor='#34d399'; this.style.transform='scale(1)';"
+      placeholder="Tell us anything special about your request 💬"></textarea>
+
+    <label style="display:block; margin-bottom: 12px; color:#065f46; font-weight: 600; font-size: 16px;">
+      📷 Upload Image
+    </label>
+    <input type="file" name="image" accept="image/*" style="margin-bottom: 28px; border-radius:12px; cursor:pointer;" />
+
+    <button type="submit"
+      style="background:#10b981; color:white; padding:16px 32px; border:none; border-radius:16px; font-size:18px; font-weight: 700; cursor:pointer; 
+             box-shadow: 0 6px 15px rgba(16, 185, 129, 0.6); transition: background 0.3s ease, transform 0.3s ease;">
+      🚀 Submit Request
+    </button>
+  </form>
+
+  <!-- 🧾 Table Section -->
+  {% if blanket_requests %}
+  <div style="overflow-x:auto; background:#f0fdfa; border-radius: 24px; box-shadow: 0 10px 30px rgba(5, 150, 105, 0.2); border: 4px solid #34d399; max-width: 100%; margin: auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:16px; font-weight: 600;">
+      <thead style="background-color:#d1fae5; color:#065f46; letter-spacing: 0.03em; font-size: 17px;">
+        <tr>
+          <th style="padding:18px 20px; text-align:left;">🖼️ Image</th>
+          <th style="padding:18px 20px; text-align:left;">🛌 Name</th>
+          <th style="padding:18px 20px; text-align:left;">🧶 Material</th>
+          <th style="padding:18px 20px; text-align:left;">🔢 Quantity</th>
+          <th style="padding:18px 20px; text-align:left;">📝 Description</th>
+          <th style="padding:18px 20px; text-align:left;">📌 Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for b in blanket_requests %}
+        <tr style="border-top: 2px solid #a7f3d0; transition: background-color 0.3s, transform 0.3s; cursor: pointer;"
+            onmouseover="this.style.background='#bbf7d0'; this.style.transform='scale(1.02)';"
+            onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+          <td style="padding:16px;">
+            {% if b.image %}
+              <img src="{{ url_for('static', filename='uploads/' + b.image) }}" style="width:100px; height:70px; object-fit:cover; border-radius:14px; box-shadow: 0 2px 10px rgba(5,150,105,0.2);" />
+            {% else %}
+              <span style="color:#6ee7b7; font-style: italic;">No image</span>
+            {% endif %}
+          </td>
+          <td style="padding:16px; color:#047857;">{{ b.name }}</td>
+          <td style="padding:16px; color:#047857;">{{ b.material }}</td>
+          <td style="padding:16px; color:#047857;">{{ b.quantity }}</td>
+          <td style="padding:16px; color:#065f46; font-weight: 500;">{{ b.description }}</td>
+
+          <!-- Extra bouncy Status Badge -->
+          <td style="padding:16px;">
+            {% if b.status == 'approved' %}
+              <span style="background-color:#34d399; color:#065f46; padding:8px 20px; border-radius:9999px; font-size:14px; font-weight:700; box-shadow: 0 0 12px #34d399; user-select:none;">
+                ✅ Approved
+              </span>
+            {% elif b.status == 'pending' %}
+              <span style="background-color:#fbbf24; color:#92400e; padding:8px 20px; border-radius:9999px; font-size:14px; font-weight:700; box-shadow: 0 0 12px #fbbf24; user-select:none;">
+                ⏳ Pending
+              </span>
+            {% elif b.status == 'rejected' %}
+              <span style="background-color:#f87171; color:#991b1b; padding:8px 20px; border-radius:9999px; font-size:14px; font-weight:700; box-shadow: 0 0 12px #f87171; user-select:none;">
+                ❌ Rejected
+              </span>
+            {% else %}
+              <span style="background-color:#94a3b8; color:#1e293b; padding:8px 20px; border-radius:9999px; font-size:14px; font-weight:700;">
+                Unknown
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p style="color:#065f46; font-size:16px; margin-top:24px; text-align:center; font-weight:600; font-style: italic;">
+      🌸 No blanket requests submitted yet. Be the first!
+    </p>
+  {% endif %}
+</div>
+
+
+
+
+    <!-- Approved Orders -->
+<div id="approved" class="section" style="display: none;">
+  <h2 style="font-size: 26px; color: #4b5563; margin-bottom: 24px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center;">
+    🌸 Approved Orders Summary 🌸
+  </h2>
+
+  {% if approved_orders %}
+  <div style="overflow-x: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(203, 213, 225, 0.7); background: #f9fafb;">
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px; font-size: 15px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+      <thead>
+        <tr style="background: #a5b4fc; color: #1e3a8a; font-weight: 700; border-radius: 12px;">
+          <th style="padding: 14px 20px; text-align: left; border-top-left-radius: 12px;">Seller</th>
+          <th style="padding: 14px 20px; text-align: left;">Blanket</th>
+          <th style="padding: 14px 20px; text-align: left; border-top-right-radius: 12px;">Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in approved_orders %}
+        <tr style="background: white; box-shadow: 0 2px 6px rgba(165, 180, 252, 0.3); border-radius: 12px; transition: transform 0.2s ease; cursor: default;">
+          <td style="padding: 14px 20px; color: #374151; border-radius: 12px 0 0 12px;">{{ o.seller_name }}</td>
+          <td style="padding: 14px 20px; color: #4b5563;">{{ o.blanket_name }}</td>
+          <td style="padding: 14px 20px; color: #4338ca; font-weight: 600; border-radius: 0 12px 12px 0;">{{ o.quantity }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="text-align: center; color: #9ca3af; font-size: 16px; font-style: italic; margin-top: 40px;">
+    No approved orders have been recorded yet. 🌷
+  </p>
+  {% endif %}
+</div>
+
+
+   <!-- Add to Inventory -->
+<div id="Addinventory" class="section" style="display: none;">
+  <h2 style="font-size: 22px; color: #1f2937; margin-bottom: 20px;">Inventory Management</h2>
+
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); font-size: 14px;">
+      <thead style="background-color: #f3f4f6; text-align: left;">
+        <tr>
+          <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Blanket Name</th>
+          <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Material</th>
+          <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Available Stock</th>
+          <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Add Quantity</th>
+          <th style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in blankets %}
+        <tr style="border-bottom: 1px solid #f3f4f6;">
+          <form method="POST" class="add-stock-form" data-stock="{{ b.manufacturer_stock }}">
+            <td style="padding: 10px 16px;">{{ b.name }}</td>
+            <td style="padding: 10px 16px;">{{ b.material }}</td>
+            <td style="padding: 10px 16px;">{{ b.manufacturer_stock | default(0) }}</td>
+            <td style="padding: 10px 16px;">
+              <input type="hidden" name="blanket_id" value="{{ b.id }}">
+              <input name="stock" type="number" min="1" required
+                style="width: 80px; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px;" />
+            </td>
+            <td style="padding: 10px 16px;">
+              <button type="submit"
+                style="background-color: #2563eb; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                Add
+              </button>
+            </td>
+          </form>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Sidebar navigation
+    function showSection(id) {
+      const sections = document.querySelectorAll(".section");
+      const links = document.querySelectorAll(".nav-link");
+      sections.forEach(sec => sec.style.display = "none");
+      links.forEach(link => link.classList.remove("active"));
+      document.getElementById(id).style.display = "block";
+      event.target.classList.add("active");
+    }
+
+    // Form validation for Add Inventory
+    document.addEventListener('DOMContentLoaded', () => {
+      const forms = document.querySelectorAll('.add-stock-form');
+
+      forms.forEach(form => {
+        form.addEventListener('submit', function (e) {
+          const stock = parseInt(form.dataset.stock, 10);
+          const quantityInput = form.querySelector('input[name="stock"]');
+          const quantity = parseInt(quantityInput.value, 10);
+
+          if (quantity > stock) {
+            e.preventDefault();
+            alert(`❌ Sorry, only ${stock} item${stock > 1 ? 's' : ''} available.`);
+            quantityInput.focus();
+            return false;
+          }
+        });
+      });
+
+      // Initialize charts only if data is available 
+      initializeCharts();
+    });
+
+    // Sample data for charts: Replace these with real dynamic data
+    const inventoryLength = {{ inventory|length }};
+    const totalUnitsLength = {{ total_units|length }};
+    const approvedOrdersLength = {{ approved_orders|length }};
+    const pendingOrdersLength = {{ orders|length }};
+
+    function initializeCharts() {
+      const ctx1 = document.getElementById('productsUnitsChart').getContext('2d');
+      const productsUnitsChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['Products', 'Units'],
+          datasets: [{
+            label: 'Count',
+            data: [inventoryLength, totalUnitsLength],
+            backgroundColor: ['#10b981', '#4B6CB7'],
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('ordersStatusChart').getContext('2d');
+      const ordersStatusChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Approved', 'Pending'],
+          datasets: [{
+            data: [approvedOrdersLength, pendingOrdersLength],
+            backgroundColor: ['#3b82f6', '#fbbf24'],
+            hoverOffset: 20,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    function updateDateTime() {
+      const dateElem = document.getElementById('date');
+      const timeElem = document.getElementById('time');
+      const now = new Date();
+
+      const optionsDate = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+      dateElem.textContent = now.toLocaleDateString(undefined, optionsDate);
+
+      const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      timeElem.textContent = now.toLocaleTimeString(undefined, optionsTime);
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // Function to show/hide sections 
+    function showSection(sectionId) {
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(section => {
+        section.style.display = 'none';
+      });
+      const activeSection = document.getElementById(sectionId);
+      if (activeSection) {
+        activeSection.style.display = 'block';
+      }
+
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+    }
+  </script>
+
+</body>
+</html>
